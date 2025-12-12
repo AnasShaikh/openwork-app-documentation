@@ -49,7 +49,10 @@ const UserFlowsOverview = ({ onClose }) => {
       color: '#EC4899',
       userType: 'jobGiver',
       description: 'Approve submitted work, NOWJC releases USDC via CCTP + triggers OW reward calc.',
-      path: ['user', 'lowjc', 'localBridge', 'nativeBridge', 'nowjc', 'nativeRewards']
+      paths: [
+        ['user', 'lowjc', 'localBridge', 'nativeBridge', 'nowjc', 'nativeRewards'],
+        ['user', 'lowjc', 'cctpLocal', 'cctpNative', 'nowjc']
+      ]
     },
     directContract: {
       id: 'directContract',
@@ -57,7 +60,10 @@ const UserFlowsOverview = ({ onClose }) => {
       color: '#06B6D4',
       userType: 'jobGiver',
       description: '1) Upload job to IPFS → 2) Send USDC + call LOWJC → 3) CCTP escrow → Start',
-      path: ['user', 'ipfs', 'lowjc', 'cctpLocal', 'cctpNative', 'nowjc', 'genesis']
+      paths: [
+        ['user', 'ipfs', 'lowjc', 'localBridge', 'nativeBridge', 'nowjc', 'genesis'],
+        ['user', 'ipfs', 'lowjc', 'cctpLocal', 'cctpNative', 'nowjc', 'genesis']
+      ]
     },
     raiseDispute: {
       id: 'raiseDispute',
