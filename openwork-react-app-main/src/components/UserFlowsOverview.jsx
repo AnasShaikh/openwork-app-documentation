@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const UserFlowsOverview = () => {
+const UserFlowsOverview = ({ onClose }) => {
   const [hoveredFlow, setHoveredFlow] = useState(null);
   const [selectedFlow, setSelectedFlow] = useState(null);
 
@@ -30,7 +30,10 @@ const UserFlowsOverview = () => {
       color: '#10B981',
       userType: 'jobGiver',
       description: 'Select applicant via LayerZero + escrow USDC via CCTP (parallel channels).',
-      path: ['user', 'lowjc', 'localBridge', 'nativeBridge', 'nowjc', 'genesis']
+      paths: [
+        ['user', 'lowjc', 'localBridge', 'nativeBridge', 'nowjc', 'genesis'],
+        ['user', 'lowjc', 'cctpLocal', 'cctpNative', 'nowjc', 'genesis']
+      ]
     },
     submitWork: {
       id: 'submitWork',
@@ -70,15 +73,15 @@ const UserFlowsOverview = () => {
       color: '#F97316',
       userType: 'athena',
       description: 'Oracle members vote. Power = (stake × duration) + earned tokens. Need 100+ OW.',
-      path: ['user', 'nativeAthena', 'nativeDAO', 'genesis']
+      path: ['user', 'nativeAthena', 'nativeDAO', 'nativeRewards', 'genesis']
     },
     settleDispute: {
       id: 'settleDispute',
       name: 'Settle Dispute',
       color: '#DC2626',
       userType: 'any',
-      description: 'Anyone calls after voting period. Athena releases funds to winner via NOWJC + CCTP.',
-      path: ['user', 'nativeAthena', 'nowjc', 'cctpNative', 'genesis']
+      description: 'Anyone calls after voting period. Athena releases funds via NOWJC → CCTP → Winner Wallet.',
+      path: ['user', 'nativeAthena', 'genesis', 'nowjc', 'cctpNative', 'cctpLocal']
     },
     stake: {
       id: 'stake',
@@ -86,7 +89,7 @@ const UserFlowsOverview = () => {
       color: '#6366F1',
       userType: 'dao',
       description: 'Lock OW tokens. Multipliers: 1wk=1x, 1mo=1.5x, 3mo=2x, 6mo=3x, 1yr=5x.',
-      path: ['user', 'owToken', 'mainDAO', 'mainRewards', 'mainBridge', 'nativeBridge', 'nativeDAO']
+      path: ['user', 'owToken', 'mainDAO', 'mainBridge', 'nativeBridge', 'nativeDAO']
     },
     propose: {
       id: 'propose',
@@ -150,7 +153,10 @@ const UserFlowsOverview = () => {
       color: '#0EA5E9',
       userType: 'dao',
       description: 'Delegate on Main DAO (for Main governance) or Native DAO (for Athena disputes).',
-      path: ['user', 'mainDAO', 'mainBridge', 'nativeBridge', 'nativeDAO', 'genesis']
+      paths: [
+        ['user', 'mainDAO'],
+        ['user', 'nativeDAO']
+      ]
     }
   };
 
@@ -169,43 +175,43 @@ const UserFlowsOverview = () => {
   // USDC positioned near LOWJC (same contract call includes USDC transfer)
   const contracts = {
     // User entry point (left side, middle height)
-    user: { x: 80, y: 380, name: 'User', subtitle: 'Wallet', region: 'user' },
+    user: { x: 80, y: 280, name: 'User', subtitle: 'Wallet', region: 'user' },
 
     // Off-chain storage (above-left of user, data uploads go here first)
-    ipfs: { x: 80, y: 200, name: 'IPFS', subtitle: 'Pinata Storage', region: 'offchain' },
+    ipfs: { x: 80, y: 100, name: 'IPFS', subtitle: 'Pinata Storage', region: 'offchain' },
 
     // Local Chain contracts - Job/Payment flows
-    usdc: { x: 220, y: 200, name: 'USDC', subtitle: 'Circle Stablecoin', region: 'local' },
-    lowjc: { x: 220, y: 320, name: 'LOWJC', subtitle: 'Local Job Contract', region: 'local' },
-    athenaClient: { x: 220, y: 440, name: 'Athena Client', subtitle: 'Dispute Entry', region: 'local' },
-    cctpLocal: { x: 360, y: 200, name: 'CCTP Local', subtitle: 'Circle Transfer', region: 'local' },
-    localBridge: { x: 360, y: 360, name: 'Local Bridge', subtitle: 'LayerZero OApp', region: 'local' },
+    usdc: { x: 220, y: 100, name: 'USDC', subtitle: 'Circle Stablecoin', region: 'local' },
+    lowjc: { x: 220, y: 220, name: 'LOWJC', subtitle: 'Local Job Contract', region: 'local' },
+    athenaClient: { x: 220, y: 340, name: 'Athena Client', subtitle: 'Dispute Entry', region: 'local' },
+    cctpLocal: { x: 360, y: 100, name: 'CCTP Local', subtitle: 'Circle Transfer', region: 'local' },
+    localBridge: { x: 360, y: 260, name: 'Local Bridge', subtitle: 'LayerZero OApp', region: 'local' },
 
-    // Main Chain (bottom - for governance/rewards claiming)
-    owToken: { x: 220, y: 640, name: 'OW Token', subtitle: 'ERC-20 Governance', region: 'main' },
-    mainDAO: { x: 360, y: 640, name: 'Main DAO', subtitle: 'OpenZeppelin Gov', region: 'main' },
-    mainRewards: { x: 360, y: 740, name: 'Main Rewards', subtitle: 'Claim Hub (UUPS)', region: 'main' },
-    mainBridge: { x: 500, y: 690, name: 'Main Bridge', subtitle: 'LayerZero OApp', region: 'main' },
+    // Main Chain (bottom - for governance/rewards claiming) - 2x2 grid layout
+    owToken: { x: 220, y: 515, name: 'OW Token', subtitle: 'ERC-20 Governance', region: 'main' },
+    mainDAO: { x: 360, y: 515, name: 'Main DAO', subtitle: 'OpenZeppelin Gov', region: 'main' },
+    mainRewards: { x: 220, y: 640, name: 'Main Rewards', subtitle: 'Claim Hub (UUPS)', region: 'main' },
+    mainBridge: { x: 360, y: 640, name: 'Main Bridge', subtitle: 'LayerZero OApp', region: 'main' },
 
     // Native Chain (right side - central hub for all data)
-    nativeBridge: { x: 520, y: 360, name: 'Native Bridge', subtitle: 'LayerZero Hub', region: 'native' },
-    cctpNative: { x: 520, y: 200, name: 'CCTP Native', subtitle: 'Circle Transfer', region: 'native' },
-    nowjc: { x: 680, y: 280, name: 'NOWJC', subtitle: 'Native Job (UUPS)', region: 'native' },
-    genesis: { x: 840, y: 200, name: 'Genesis', subtitle: 'Job Data Store', region: 'native' },
-    nativeAthena: { x: 680, y: 400, name: 'Native Athena', subtitle: 'Dispute (UUPS)', region: 'native' },
-    nativeDAO: { x: 840, y: 400, name: 'Native DAO', subtitle: 'Gov Mirror (UUPS)', region: 'native' },
-    nativeRewards: { x: 840, y: 300, name: 'Native Rewards', subtitle: '20-Band Calc', region: 'native' },
-    profileManager: { x: 680, y: 500, name: 'Profile Mgr', subtitle: 'User Profiles', region: 'native' },
-    profileGenesis: { x: 840, y: 500, name: 'Profile Genesis', subtitle: 'Profile Storage', region: 'native' },
-    oracleManager: { x: 840, y: 450, name: 'Oracle Mgr', subtitle: 'Skill Oracles', region: 'native' },
-    contractRegistry: { x: 680, y: 580, name: 'Registry', subtitle: 'Address Lookup', region: 'native' }
+    nativeBridge: { x: 520, y: 260, name: 'Native Bridge', subtitle: 'LayerZero Hub', region: 'native' },
+    cctpNative: { x: 520, y: 100, name: 'CCTP Native', subtitle: 'Circle Transfer', region: 'native' },
+    nowjc: { x: 680, y: 180, name: 'NOWJC', subtitle: 'Native Job (UUPS)', region: 'native' },
+    genesis: { x: 840, y: 100, name: 'Genesis', subtitle: 'Job Data Store', region: 'native' },
+    nativeAthena: { x: 680, y: 300, name: 'Native Athena', subtitle: 'Dispute (UUPS)', region: 'native' },
+    nativeDAO: { x: 840, y: 300, name: 'Native DAO', subtitle: 'Gov Mirror (UUPS)', region: 'native' },
+    nativeRewards: { x: 840, y: 200, name: 'Native Rewards', subtitle: '20-Band Calc', region: 'native' },
+    profileManager: { x: 680, y: 420, name: 'Profile Mgr', subtitle: 'User Profiles', region: 'native' },
+    oracleManager: { x: 840, y: 420, name: 'Oracle Mgr', subtitle: 'Skill Oracles', region: 'native' },
+    profileGenesis: { x: 840, y: 520, name: 'Profile Genesis', subtitle: 'Profile Storage', region: 'native' },
+    contractRegistry: { x: 680, y: 520, name: 'Registry', subtitle: 'Address Lookup', region: 'native' }
   };
 
   const regions = {
-    offchain: { x: 35, y: 150, width: 90, height: 100, name: 'Off-chain', color: '#FEE2E2', borderColor: '#FCA5A5' },
-    local: { x: 165, y: 150, width: 255, height: 360, name: 'Local Chains (OP, ETH, Base, Polygon)', color: '#EEF2FF', borderColor: '#C7D2FE' },
-    main: { x: 165, y: 580, width: 395, height: 210, name: 'Main Chain (Base Sepolia → Ethereum)', color: '#FEF3C7', borderColor: '#FCD34D' },
-    native: { x: 460, y: 150, width: 450, height: 500, name: 'Native Chain (Arbitrum Sepolia)', color: '#ECFDF5', borderColor: '#6EE7B7' }
+    offchain: { x: 35, y: 50, width: 90, height: 100, name: 'Off-chain', color: '#FEE2E2', borderColor: '#FCA5A5' },
+    local: { x: 165, y: 50, width: 255, height: 360, name: 'Local Chains (OP, ETH, Base, Polygon)', color: '#EEF2FF', borderColor: '#C7D2FE' },
+    main: { x: 165, y: 480, width: 270, height: 210, name: 'Main Chain (Base Sepolia → Ethereum)', color: '#FEF3C7', borderColor: '#FCD34D' },
+    native: { x: 460, y: 50, width: 450, height: 500, name: 'Native Chain (Arbitrum Sepolia)', color: '#ECFDF5', borderColor: '#6EE7B7' }
   };
 
   const isFlowActive = (flowId) => {
@@ -215,7 +221,11 @@ const UserFlowsOverview = () => {
   const isContractInFlow = (contractId) => {
     if (!hoveredFlow && !selectedFlow) return false;
     const activeFlow = flows[hoveredFlow] || flows[selectedFlow];
-    return activeFlow?.path.includes(contractId);
+    // Handle both single path and multiple paths
+    if (activeFlow?.paths) {
+      return activeFlow.paths.some(p => p.includes(contractId));
+    }
+    return activeFlow?.path?.includes(contractId);
   };
 
   const activeFlowColor = () => {
@@ -235,7 +245,7 @@ const UserFlowsOverview = () => {
   return (
     <div style={{
       position: 'fixed',
-      top: 0,
+      top: '70px',
       left: 0,
       right: 0,
       bottom: 0,
@@ -264,7 +274,7 @@ const UserFlowsOverview = () => {
           </p>
         </div>
         <button
-          onClick={() => window.history.back()}
+          onClick={() => onClose ? onClose() : window.history.back()}
           style={{
             padding: '6px 12px',
             borderRadius: '6px',
@@ -376,7 +386,7 @@ const UserFlowsOverview = () => {
         </div>
 
         {/* Main Diagram */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '0 20px 20px 20px' }}>
           <svg width="960" height="840" style={{ display: 'block', margin: '0 auto' }}>
             {/* Regions */}
             {Object.entries(regions).map(([id, region]) => (
@@ -407,20 +417,66 @@ const UserFlowsOverview = () => {
             {/* Flow Paths */}
             {Object.values(flows).map(flow => {
               const active = isFlowActive(flow.id);
+              
+              // Helper function to adjust line coordinates for better edge connections
+              const getLineCoords = (point, next) => {
+                let x1 = point.x;
+                let y1 = point.y;
+                let x2 = next.x;
+                let y2 = next.y;
+                
+                // Special case: mainBridge to nativeBridge - start from right edge
+                if (point.region === 'main' && next.region === 'native' && y1 > y2) {
+                  x1 = point.x + 52; // Right edge of contract box
+                }
+                
+                return { x1, y1, x2, y2 };
+              };
+              
+              // Handle flows with multiple parallel paths
+              if (flow.paths) {
+                return (
+                  <g key={flow.id}>
+                    {flow.paths.map((singlePath, pathIdx) => {
+                      const points = singlePath.map(id => contracts[id]).filter(Boolean);
+                      return points.slice(0, -1).map((point, idx) => {
+                        const next = points[idx + 1];
+                        const coords = getLineCoords(point, next);
+                        return (
+                          <line
+                            key={`${pathIdx}-${idx}`}
+                            x1={coords.x1}
+                            y1={coords.y1}
+                            x2={coords.x2}
+                            y2={coords.y2}
+                            stroke={flow.color}
+                            strokeWidth={active ? 3 : 1}
+                            strokeOpacity={active ? 0.9 : 0.06}
+                            markerEnd={active ? `url(#arrow-${flow.id})` : ''}
+                            style={{ transition: 'all 0.2s ease' }}
+                          />
+                        );
+                      });
+                    })}
+                  </g>
+                );
+              }
+              
+              // Handle flows with single path
               const points = flow.path.map(id => contracts[id]).filter(Boolean);
-
               return (
                 <g key={flow.id}>
                   {points.slice(0, -1).map((point, idx) => {
                     const next = points[idx + 1];
+                    const coords = getLineCoords(point, next);
 
                     return (
                       <line
                         key={idx}
-                        x1={point.x}
-                        y1={point.y}
-                        x2={next.x}
-                        y2={next.y}
+                        x1={coords.x1}
+                        y1={coords.y1}
+                        x2={coords.x2}
+                        y2={coords.y2}
                         stroke={flow.color}
                         strokeWidth={active ? 3 : 1}
                         strokeOpacity={active ? 0.9 : 0.06}
@@ -531,11 +587,39 @@ const UserFlowsOverview = () => {
               );
             })}
 
+            {/* Special: Settle Dispute outward arrow from CCTP Local */}
+            {isFlowActive('settleDispute') && (
+              <g>
+                {/* Arrow from cctpLocal pointing up/outward */}
+                <line
+                  x1={contracts.cctpLocal.x}
+                  y1={contracts.cctpLocal.y - 26}
+                  x2={contracts.cctpLocal.x}
+                  y2={contracts.cctpLocal.y - 70}
+                  stroke={flows.settleDispute.color}
+                  strokeWidth="3"
+                  strokeOpacity="0.9"
+                  markerEnd="url(#arrow-settleDispute)"
+                />
+                {/* Label */}
+                <text
+                  x={contracts.cctpLocal.x}
+                  y={contracts.cctpLocal.y - 80}
+                  fontSize="10"
+                  fontWeight="600"
+                  fill={flows.settleDispute.color}
+                  textAnchor="middle"
+                >
+                  To Winner Wallet
+                </text>
+              </g>
+            )}
+
             {/* Connection labels */}
             <g fontSize="8" fill="#9CA3AF" fontWeight="500">
-              <text x="440" y="375" textAnchor="middle">LayerZero V2</text>
-              <text x="440" y="215" textAnchor="middle">Circle CCTP</text>
-              <text x="510" y="705" textAnchor="middle">LayerZero V2</text>
+              <text x="440" y="275" textAnchor="middle">LayerZero V2</text>
+              <text x="440" y="115" textAnchor="middle">Circle CCTP</text>
+              <text x="420" y="605" textAnchor="middle">LayerZero V2</text>
             </g>
           </svg>
 
@@ -543,7 +627,7 @@ const UserFlowsOverview = () => {
           {(selectedFlow || hoveredFlow) && (
             <div style={{
               position: 'fixed',
-              bottom: '20px',
+              top: '80px',
               left: '300px',
               backgroundColor: '#fff',
               padding: '14px 18px',
@@ -576,34 +660,73 @@ const UserFlowsOverview = () => {
               <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px' }}>
                 {flows[selectedFlow || hoveredFlow]?.description}
               </div>
-              <div style={{
-                fontSize: '10px',
-                color: '#374151',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                flexWrap: 'wrap',
-                backgroundColor: '#F9FAFB',
-                padding: '8px 10px',
-                borderRadius: '6px'
-              }}>
-                {flows[selectedFlow || hoveredFlow]?.path.map((p, i) => (
-                  <React.Fragment key={i}>
-                    <span style={{
-                      backgroundColor: '#fff',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      border: '1px solid #E5E7EB',
-                      fontWeight: '500'
+              {/* Show parallel paths for flows with multiple paths */}
+              {flows[selectedFlow || hoveredFlow]?.paths ? (
+                flows[selectedFlow || hoveredFlow].paths.map((singlePath, pathIdx) => (
+                  <div key={pathIdx} style={{ marginBottom: pathIdx < flows[selectedFlow || hoveredFlow].paths.length - 1 ? '8px' : '0' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '600', color: '#666', marginBottom: '4px' }}>
+                      Path {pathIdx + 1}: {pathIdx === 0 ? 'LayerZero (Job Data)' : 'CCTP (USDC)'}
+                    </div>
+                    <div style={{
+                      fontSize: '10px',
+                      color: '#374151',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      flexWrap: 'wrap',
+                      backgroundColor: '#F9FAFB',
+                      padding: '8px 10px',
+                      borderRadius: '6px'
                     }}>
-                      {contracts[p]?.name || p}
-                    </span>
-                    {i < flows[selectedFlow || hoveredFlow].path.length - 1 && (
-                      <span style={{ color: flows[selectedFlow || hoveredFlow]?.color }}>→</span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
+                      {singlePath.map((p, i) => (
+                        <React.Fragment key={i}>
+                          <span style={{
+                            backgroundColor: '#fff',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            border: '1px solid #E5E7EB',
+                            fontWeight: '500'
+                          }}>
+                            {contracts[p]?.name || p}
+                          </span>
+                          {i < singlePath.length - 1 && (
+                            <span style={{ color: flows[selectedFlow || hoveredFlow]?.color }}>→</span>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{
+                  fontSize: '10px',
+                  color: '#374151',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  backgroundColor: '#F9FAFB',
+                  padding: '8px 10px',
+                  borderRadius: '6px'
+                }}>
+                  {flows[selectedFlow || hoveredFlow]?.path.map((p, i) => (
+                    <React.Fragment key={i}>
+                      <span style={{
+                        backgroundColor: '#fff',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        border: '1px solid #E5E7EB',
+                        fontWeight: '500'
+                      }}>
+                        {contracts[p]?.name || p}
+                      </span>
+                      {i < flows[selectedFlow || hoveredFlow].path.length - 1 && (
+                        <span style={{ color: flows[selectedFlow || hoveredFlow]?.color }}>→</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

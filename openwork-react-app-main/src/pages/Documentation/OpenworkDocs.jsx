@@ -867,7 +867,7 @@ const OpenworkDocs = () => {
 
           {selectedContract === 'flows' ? (
             <div className="docs-flows-container">
-              <UserFlowsOverview />
+              <UserFlowsOverview onClose={() => setSelectedContract(null)} />
             </div>
           ) : selectedContract === 'oppy' ? (
             <div className="docs-chat-container">
