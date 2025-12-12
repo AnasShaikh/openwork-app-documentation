@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd openwork-react-app-main && npm install && npm run build",
+  "outputDirectory": "openwork-react-app-main/dist",
+  "installCommand": "echo 'Skipping root install'",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
